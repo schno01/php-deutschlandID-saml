@@ -164,6 +164,7 @@ REQUESTEDAUTHN;
 AUTHNREQUEST;
 
         $this->_id = $id;
+        $request = $this->change4deid($request);
         $this->_authnRequest = $request;
     }
 
@@ -190,6 +191,14 @@ AUTHNREQUEST;
         return $base64Request;
     }
 
+    public function setRequest($subject = null)
+    {
+        $this->_authnRequest = $subject;
+
+        return;
+    }
+
+
     /**
      * Returns the AuthNRequest ID.
      *
@@ -208,5 +217,66 @@ AUTHNREQUEST;
     public function getXML()
     {
         return $this->_authnRequest;
+    }
+
+    /**
+     * Add AKDB EXTENSION AND MORE INFO
+     * @param string $request
+     * @return string
+     */
+    private function change4deid(string $request):string
+    {
+
+
+        $security = $this->_settings->getSecurityData();
+
+        $request = str_replace('<saml:Issuer>','<saml2:Issuer xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion">',$request);
+        $request = str_replace('</saml:Issuer>','</saml2:Issuer>',$request);
+        $request = str_replace('<samlp:AuthnRequest','<saml2p:AuthnRequest xmlns:saml2p="urn:oasis:names:tc:SAML:2.0:protocol"',$request);
+
+
+if(!isset($this->_settings->getSPData()['attributeConsumingService']['requestedAttributes'])){
+    throw new Error(
+        'SAML requestedAttributes missing',
+        Error::METADATA_SP_INVALID
+    );
+}
+        if(!isset($this->_settings->getOrganization()['en']['displayname'])){
+            throw new Error(
+                'SAML Organization displayname [en] missing',
+                Error::METADATA_SP_INVALID
+            );
+        }
+
+
+
+        $requestedAttributes = $this->_settings->getSPData()['attributeConsumingService']['requestedAttributes'];
+
+        $add='<saml2p:Extensions>
+<akdb:AuthenticationRequest xmlns:akdb="https://www.akdb.de/request/2018/09" EnableStatusDetail="true"
+Version="2"
+>
+<akdb:RequestedAttributes>';
+        foreach ($requestedAttributes as $requestedAttribute) {
+            $add.='<akdb:RequestedAttribute Name="'.$requestedAttribute['name'].'"
+RequiredAttribute="'.($requestedAttribute['isRequired']?'true':'false').'"
+/>';
+        }
+        $add.='</akdb:RequestedAttributes>
+<akdb:DisplayInformation>
+<classic-ui:Version xmlns:classic-ui="https://www.akdb.de/request/2018/09/classic-ui/v1">
+<classic-ui:OrganizationDisplayName>'.$this->_settings->getOrganization()['en']['displayname'].'</classic-ui:OrganizationDisplayName>
+</classic-ui:Version>
+</akdb:DisplayInformation>
+</akdb:AuthenticationRequest>
+</saml2p:Extensions>';
+
+        $add.='<saml2p:RequestedAuthnContext Comparison="minimum">
+<saml2:AuthnContextClassRef xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion">STORK-QAA-Level-1</saml2:AuthnContextClassRef>
+</saml2p:RequestedAuthnContext>';
+
+        $request = str_replace('</samlp:AuthnRequest',$add.'</saml2p:AuthnRequest',$request);
+
+        return $request;
     }
 }
