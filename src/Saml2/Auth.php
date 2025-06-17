@@ -16,6 +16,10 @@ namespace OneLogin\Saml2;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
 
 use Exception;
+use Selective\XmlDSig\Algorithm;
+use Selective\XmlDSig\CryptoSigner;
+use Selective\XmlDSig\PrivateKeyStore;
+use Selective\XmlDSig\XmlSigner;
 
 /**
  * Main class of SAML PHP Toolkit
@@ -362,7 +366,42 @@ class Auth
         if (empty($url) && isset($_REQUEST['RelayState'])) {
             $url = $_REQUEST['RelayState'];
         }
+        return $this->buildRequest($url, $parameters, $stay);
+        //return Utils::redirect($url, $parameters, $stay);
+    }
 
+    /**
+     * Create Form and Submit POST OR REDIRECT
+     * @param $url
+     * @param $parameters
+     * @param $stay
+     * @return never|string|void|null
+     * @throws Error
+     */
+    public function buildRequest($url, $parameters, $stay)
+    {
+        if(isset($this->getSettings()->getIdPData()["singleSignOnService"]["binding"])){
+            $binding = $this->getSettings()->getIdPData()["singleSignOnService"]["binding"];
+        }else{
+            $binding = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST";
+        }
+        if($binding=="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"){
+            ?>
+            <form action="<?=$url;?>" method="post" id="post_form">
+                <?php foreach($parameters as $k => $v){ ?>
+                    <input type="hidden" value="<?=$v;?>" name="<?=$k;?>" />
+                <?php }?>
+                <noscript><button type="submit" name="go" value="go">go</button></noscript>
+            </form>
+            <script>
+                function go () {
+                    document.getElementById('post_form').submit();
+                }
+                window.setTimeout("go()", 500);
+            </script>
+            <?php
+            exit;
+        }
         return Utils::redirect($url, $parameters, $stay);
     }
 
@@ -556,12 +595,58 @@ class Auth
         }
 
         $security = $this->_settings->getSecurityData();
+        /*
         if (isset($security['authnRequestsSigned']) && $security['authnRequestsSigned']) {
             $signature = $this->buildRequestSignature($samlRequest, $parameters['RelayState'], $security['signatureAlgorithm']);
             $parameters['SigAlg'] = $security['signatureAlgorithm'];
             $parameters['Signature'] = $signature;
         }
+        */
+        if (isset($security['authnRequestsSigned']) && $security['authnRequestsSigned']) {
+
+
+            $samlRequestSigned = $this->signdeIDdata($this->_lastRequest,$security['signatureAlgorithm']);
+
+            $parameters['SAMLRequest'] = base64_encode($samlRequestSigned);
+
+        }else{
+            $samlRequest = $authnRequest->getRequest();
+            $parameters['SAMLRequest'] = $samlRequest;
+            $parameters['SigAlg'] = $security['signatureAlgorithm'];
+            $parameters['Signature'] = $this->buildRequestSignature($samlRequest, $parameters['RelayState'], $security['signatureAlgorithm']);
+        }
         return $this->redirectTo($this->getSSOurl(), $parameters, $stay);
+    }
+
+    private function signdeIDdata($msg,$signAlgorithm = Algorithm::METHOD_SHA256_MGF1)
+    {
+        $key = $this->_settings->getSPkey();
+        if (empty($key)) {
+            $errorMsg = "Trying to sign but can't load the SP private key";
+
+            throw new Error($errorMsg, Error::PRIVATE_KEY_NOT_FOUND);
+        }
+
+
+
+        $algorithm = new Algorithm($signAlgorithm);
+
+        $privateKeyStore = new PrivateKeyStore();
+        $privateKeyStore->loadFromPem($key,'');
+        $privateKeyStore->addCertificatesFromX509Pem($this->_settings->getSPCert());
+
+        $cryptoSigner = new CryptoSigner($privateKeyStore, $algorithm);
+
+
+        $xmlSigner = new XmlSigner($cryptoSigner);
+        $xmlSigner->setReferenceUri('#'.$this->_lastRequestID);
+        $xml = new \DOMDocument( "2.0", "UTF-8" );
+        $xml->loadXML($msg);
+
+        $msg = $xml->C14N();
+        $signedXml = $xmlSigner->signXml($msg);
+
+        return $signedXml;
     }
 
     /**

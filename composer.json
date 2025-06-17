@@ -1,6 +1,6 @@
 {
-    "name": "onelogin/php-saml",
-    "description": "PHP SAML Toolkit",
+    "name": "schno01/php-deutschlandid-saml",
+    "description": "Simple SAML toolkit for bundID/deutschlandID in PHP ",
     "license": "MIT",
     "homepage": "https://github.com/SAML-Toolkits/php-saml",
     "keywords": ["saml", "saml2", "sso", "federation", "identity"],
@@ -11,12 +11,13 @@
     },
     "support": {
         "email": "sixto.martin.garcia@gmail.com",
-        "issues": "https://github.com/onelogin/SAML-Toolkits/issues",
-        "source": "https://github.com/onelogin/SAML-Toolkits/"
+        "issues": "https://github.com/schno01/php-deutschlandid-saml/issues",
+        "source": "https://github.com/schno01/php-deutschlandid-saml/"
     },
     "require": {
-        "php": ">=7.3",
-        "robrichards/xmlseclibs": "^3.1"
+        "php": ">=8.1",
+        "schno01/xmlseclibs-deid": "dev-master",
+        "schno01/xmldsig": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",
@@ -28,7 +29,7 @@
     },
     "config": {
         "platform": {
-            "php": "7.3.0"
+            "php": "8.2.0"
         },
         "optimize-autoloader": true,
         "sort-packages": true

@@ -107,7 +107,7 @@ The toolkit supports [composer](https://getcomposer.org/). You can find the `one
 
 In order to import the saml toolkit to your current php project, execute
 ```
-composer require onelogin/php-saml
+composer require schno01/php-deutschlandid-saml
 ```
 
 Remember to select the 3.X.X branch
