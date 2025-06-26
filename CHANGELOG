@@ -1,5 +1,8 @@
 CHANGELOG
 =========
+4.x-dev
+MGF1 Support
+
 
 v4.3.0
 * [#619](https://github.com/SAML-Toolkits/php-saml/pull/619) Add Parameter checking on validateBinarySign, inspired on CVE-2025-27773
