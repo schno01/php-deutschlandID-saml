@@ -220,7 +220,7 @@ class Utils
     public static function formatCert($x509cert, $heads = true)
     {
         if (is_null($x509cert)) {
-          return;
+            return;
         }
 
         if (strpos($x509cert, '-----BEGIN CERTIFICATE-----') !== false) {
@@ -247,7 +247,7 @@ class Utils
     public static function formatPrivateKey($key, $heads = true)
     {
         if (is_null($key)) {
-          return;
+            return;
         }
 
         $key = str_replace(array("\x0D", "\r", "\n"), "", $key);
@@ -377,7 +377,7 @@ class Utils
         exit();
     }
 
-     /**
+    /**
      * @param $protocolRegex string
      */
     public static function setProtocolRegex($protocolRegex)
@@ -423,10 +423,10 @@ class Utils
                 self::setBaseURLPath($baseurlpath);
             }
         } else {
-                self::$_host = null;
-                self::$_protocol = null;
-                self::$_port = null;
-                self::$_baseurlpath = null;
+            self::$_host = null;
+            self::$_protocol = null;
+            self::$_port = null;
+            self::$_baseurlpath = null;
         }
     }
 
@@ -794,7 +794,7 @@ class Utils
     public static function parseSAML2Time($time)
     {
         if (empty($time)) {
-          return null;
+            return null;
         }
 
         $matches = array();
@@ -983,7 +983,7 @@ class Utils
     /**
      * Checks if the session is started or not.
      *
-     * @return bool true if the sessíon is started
+     * @return bool true if the sess�on is started
      */
     public static function isSessionStarted()
     {
@@ -1310,17 +1310,17 @@ class Utils
         return $decryptedElement;
     }
 
-     /**
-      * Converts a XMLSecurityKey to the correct algorithm.
-      *
-      * @param XMLSecurityKey $key       The key.
-      * @param string         $algorithm The desired algorithm.
-      * @param string         $type      Public or private key, defaults to public.
-      *
-      * @return XMLSecurityKey The new key.
-      *
-      * @throws Exception
-      */
+    /**
+     * Converts a XMLSecurityKey to the correct algorithm.
+     *
+     * @param XMLSecurityKey $key       The key.
+     * @param string         $algorithm The desired algorithm.
+     * @param string         $type      Public or private key, defaults to public.
+     *
+     * @return XMLSecurityKey The new key.
+     *
+     * @throws Exception
+     */
     public static function castKey(XMLSecurityKey $key, $algorithm, $type = 'public')
     {
         assert(is_string($algorithm));
@@ -1509,7 +1509,7 @@ class Utils
         foreach ($multiCerts as $cert) {
             if (!empty($cert)) {
                 $objKey->loadKey($cert, false, true);
-                if ($objXMLSecDSig->verify($objKey) === 1) {
+                if (self::new_verify($objXMLSecDSig,$objKey) === 1) {
                     $valid = true;
                     break;
                 }
@@ -1519,7 +1519,7 @@ class Utils
                     $domCertFingerprint = Utils::calculateX509Fingerprint($domCert, $fingerprintalg);
                     if (Utils::formatFingerPrint($fingerprint) == $domCertFingerprint) {
                         $objKey->loadKey($domCert, false, true);
-                        if ($objXMLSecDSig->verify($objKey) === 1) {
+                        if (self::new_verify($objXMLSecDSig,$objKey) === 1) {
                             $valid = true;
                             break;
                         }
@@ -1527,8 +1527,50 @@ class Utils
                 }
             }
         }
+
         return $valid;
     }
+
+
+/**
+     * Validates a signature (Message or Assertion).
+     *
+     * BYPASS FOR sha256-rsa-MGF1 and sha512-rsa-MGF1
+     *
+     * @return bool
+     *
+     * @throws Exception
+     */
+    public static function new_verify($objXMLSecDSig,$objKey){
+
+
+        if($objKey->type=='http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1'||$objKey->type=='sha256MGF1'||$objKey->type=='http://www.w3.org/2007/05/xmldsig-more#sha512-rsa-MGF1'||$objKey->type=='sha512MGF1'){
+            $doc = $objXMLSecDSig->sigNode->ownerDocument;
+            $xpath = new DOMXPath($doc);
+            $xpath->registerNamespace('secdsig', 'http://www.w3.org/2000/09/xmldsig#');
+            $query = "string(./secdsig:SignatureValue)";
+            $sigValue = $xpath->evaluate($query, $objXMLSecDSig->sigNode);
+            if (empty($sigValue)) {
+                throw new Exception("Unable to locate SignatureValue");
+            }
+        }
+        if($objKey->type=='http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1'||$objKey->type=='sha256MGF1'){
+            $helper = (array)$objXMLSecDSig;
+            $publicKey = \phpseclib3\Crypt\PublicKeyLoader::load($objKey->getX509Certificate());
+            $publicKey = $publicKey->withHash('sha256')->withMGFHash('sha256')->withPadding(\phpseclib3\Crypt\RSA::SIGNATURE_PSS);
+            $signedInfo = $helper["\x00RobRichards\XMLSecLibs\XMLSecurityDSig\x00signedInfo"];
+            return (int)$publicKey->verify($signedInfo,base64_decode($sigValue));
+        }else if($objKey->type=='http://www.w3.org/2007/05/xmldsig-more#sha512-rsa-MGF1'||$objKey->type=='sha512MGF1'){
+            $helper = (array)$objXMLSecDSig;
+            $publicKey = \phpseclib3\Crypt\PublicKeyLoader::load($objKey->getX509Certificate());
+            $publicKey = $publicKey->withHash('sha512')->withMGFHash('sha512')->withPadding(\phpseclib3\Crypt\RSA::SIGNATURE_PSS);
+            $signedInfo = $helper["\x00RobRichards\XMLSecLibs\XMLSecurityDSig\x00signedInfo"];
+            return (int)$publicKey->verify($signedInfo,base64_decode($sigValue));
+
+        }
+        return $objXMLSecDSig->verify($objKey);
+    }
+
 
     /**
      * Validates a binary signature
