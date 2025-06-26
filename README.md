@@ -1,4 +1,4 @@
-# SAML PHP Toolkit Compatible with PHP 7.3,7.4 & 8.X
+# SAML PHP Toolkit Compatible with PHP  8.X
 
 [![php-saml 4.x-dev package](https://github.com/SAML-Toolkits/php-saml/actions/workflows/php-package.yml/badge.svg?branch=4.x-dev)](https://github.com/SAML-Toolkits/php-saml/actions/workflows/php-package.yml) [![Coverage Status](https://coveralls.io/repos/github/SAML-Toolkits/php-saml/badge.svg?branch=4.x-dev)](https://coveralls.io/github/SAML-Toolkits/php-saml?branch=4.x-dev) ![Packagist Dependency Version (specify version)](https://img.shields.io/packagist/dependency-v/onelogin/php-saml/php?version=4.0.0) [![License](https://poser.pugx.org/onelogin/php-saml/license.png)](https://packagist.org/packages/onelogin/php-saml) ![Packagist Downloads](https://img.shields.io/packagist/dm/onelogin/php-saml) ![Packagist Downloads](https://img.shields.io/packagist/dt/onelogin/php-saml?label=Total%20downloads)
 
@@ -8,7 +8,225 @@ Add SAML support to your PHP software using this library.
 Warning
 -------
 
-This version is compatible with PHP >=7.3 and 8.X and does not include xmlseclibs (you will need to install it via composer, dependency described in composer.json)
+This version is compatible with PHP 8.X and does not include xmlseclibs (you will need to install it via composer, dependency described in composer.json)
+
+NOTE !!! This is a customized version for the bundID, deutschlandID without guarantee or liability. Please take the necessary security precautions yourself when operating the software.
+
+DEMO-Config
+-------
+
+Array
+(
+    [strict] => 1
+    [debug] => 0
+    [baseurl] => https://...
+    [sp] => Array
+        (
+            [entityId] => https://...
+            [assertionConsumerService] => Array
+                (
+                    [url] => https://...
+                    [binding] => urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST
+                )
+
+            [attributeConsumingService] => Array
+                (
+                    [serviceName] => Broschuerenservice NRW
+                    [serviceDescription] => Broschuerenservice NRW
+                    [requestedAttributes] => Array
+                        (
+                            [0] => Array
+                                (
+                                    [name] => urn:oid:2.5.4.42
+                                    [isRequired] => 1
+                                    [nameFormat] => urn:oasis:names:tc:SAML:2.0:attrname-format:uri
+                                    [friendlyName] => givenName
+                                )
+
+                            [1] => Array
+                                (
+                                    [name] => urn:oid:2.5.4.4
+                                    [isRequired] => 1
+                                    [nameFormat] => urn:oasis:names:tc:SAML:2.0:attrname-format:uri
+                                    [friendlyName] => surname
+                                )
+
+                            [2] => Array
+                                (
+                                    [name] => urn:oid:0.9.2342.19200300.100.1.3
+                                    [isRequired] => 1
+                                    [nameFormat] => urn:oasis:names:tc:SAML:2.0:attrname-format:uri
+                                    [friendlyName] => mail
+                                )
+
+                            [3] => Array
+                                (
+                                    [name] => urn:oid:2.5.4.16
+                                    [isRequired] => 1
+                                    [nameFormat] => urn:oasis:names:tc:SAML:2.0:attrname-format:uri
+                                    [friendlyName] => postalAdddress
+                                )
+
+                            [4] => Array
+                                (
+                                    [name] => urn:oid:2.5.4.17
+                                    [isRequired] => 1
+                                    [nameFormat] => urn:oasis:names:tc:SAML:2.0:attrname-format:uri
+                                    [friendlyName] => postalCode
+                                )
+
+                            [5] => Array
+                                (
+                                    [name] => urn:oid:2.5.4.7
+                                    [isRequired] => 1
+                                    [nameFormat] => urn:oasis:names:tc:SAML:2.0:attrname-format:uri
+                                    [friendlyName] => localityName
+                                )
+
+                            [6] => Array
+                                (
+                                    [name] => urn:oid:1.2.40.0.10.2.1.1.225599
+                                    [isRequired] => 
+                                    [nameFormat] => urn:oasis:names:tc:SAML:2.0:attrname-format:uri
+                                    [friendlyName] => country
+                                )
+
+                            [7] => Array
+                                (
+                                    [name] => urn:oid:1.3.6.1.4.1.33592.1.3.5
+                                    [isRequired] => 
+                                    [nameFormat] => urn:oasis:names:tc:SAML:2.0:attrname-format:uri
+                                    [friendlyName] => gender
+                                )
+
+                            [8] => Array
+                                (
+                                    [name] => urn:oid:0.9.2342.19200300.100.1.40
+                                    [isRequired] => 
+                                    [nameFormat] => urn:oasis:names:tc:SAML:2.0:attrname-format:uri
+                                    [friendlyName] => personalTitle
+                                )
+
+                            [9] => Array
+                                (
+                                    [name] => urn:oid:2.5.4.20
+                                    [isRequired] => 
+                                    [nameFormat] => urn:oasis:names:tc:SAML:2.0:attrname-format:uri
+                                    [friendlyName] => telephoneNumber
+                                )
+
+                        )
+
+                )
+
+            [NameIDFormat] => urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified
+            [x509cert] => M...=
+            [privateKey] => M...=
+            [x509certMulti] => Array
+                (
+                    [signing] => Array
+                        (
+                            [0] => M...=
+                        )
+
+                    [encryption] => Array
+                        (
+                            [0] => M...=
+                        )
+
+                )
+
+        )
+
+    [idp] => Array
+        (
+            [entityId] => https://id.bund.de/idp
+            [singleSignOnService] => Array
+                (
+                    [url] => https://id.bund.de/idp/profile/SAML2/POST/SSO
+                    [binding] => urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST
+                )
+
+            [x509cert] => M....g==
+        )
+
+    [security] => Array
+        (
+            [nameIdEncrypted] => 
+            [authnRequestsSigned] => 1
+            [logoutRequestSigned] => 
+            [logoutResponseSigned] => 
+            [signMetadata] => 
+            [wantMessagesSigned] => 
+            [wantAssertionsEncrypted] => 
+            [wantAssertionsSigned] => 1
+            [wantNameId] => 
+            [wantNameIdEncrypted] => 
+            [requestedAuthnContext] => 
+            [wantXMLValidation] => 1
+            [relaxDestinationValidation] => 
+            [allowRepeatAttributeName] => 
+            [destinationStrictlyMatches] => 
+            [rejectUnsolicitedResponsesWithInResponseTo] => 
+            [signatureAlgorithm] => http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1
+            [encryption_algorithm] => hhttp://www.w3.org/2009/xmlenc11#aes256-gcm
+            [digestAlgorithm] => http://www.w3.org/2001/04/xmlenc#sha256
+            [lowercaseUrlencoding] => 
+        )
+
+    [contactPerson] => Array
+        (
+            [technical] => Array
+                (
+                    [givenName] => ...
+                    [emailAddress] => ...
+                )
+
+            [support] => Array
+                (
+                    [givenName] => ...
+                    [emailAddress] => ...
+                )
+
+        )
+
+    [organization] => Array
+        (
+            [en] => Array
+                (
+                    [name] => ...
+                    [displayname] => ...                    
+                    [url] => https://...                )
+
+        )
+
+)
+
+USAGE
+-------------------
+
+$this->auth = new Auth(...);
+
+$this->auth->login();
+
+After Redirect get Reponse from $_POST['SAMLResponse'] 
+
+$this->auth->processResponse($this->auth->getLastRequestID());
+$eid_data = (array)$this->auth->getAttributesWithFriendlyName();
+$eid_data = $this->toFirstOnes($eid_data);
+
+// $this->toFirstOnes :
+
+private function toFirstOnes(array $eid_data): array
+    {
+        foreach ($eid_data as $key => $value) {
+            if(is_array($value)) {
+                $eid_data[$key]=$value[0];
+            }
+        }
+        return $eid_data;
+    }
+
 
 Security Guidelines
 -------------------
