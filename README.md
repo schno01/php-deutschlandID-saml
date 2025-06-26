@@ -14,7 +14,7 @@ NOTE !!! This is a customized version for the bundID, deutschlandID without guar
 
 DEMO-Config
 -------
-
+```
 Array
 (
     [strict] => 1
@@ -31,8 +31,8 @@ Array
 
             [attributeConsumingService] => Array
                 (
-                    [serviceName] => Broschuerenservice NRW
-                    [serviceDescription] => Broschuerenservice NRW
+                    [serviceName] => ...
+                    [serviceDescription] => ...
                     [requestedAttributes] => Array
                         (
                             [0] => Array
@@ -201,22 +201,22 @@ Array
         )
 
 )
-
+```
 USAGE
 -------------------
-
+```
 $this->auth = new Auth(...);
 
 $this->auth->login();
-
+```
 After Redirect get Reponse from $_POST['SAMLResponse'] 
-
+```
 $this->auth->processResponse($this->auth->getLastRequestID());
 $eid_data = (array)$this->auth->getAttributesWithFriendlyName();
 $eid_data = $this->toFirstOnes($eid_data);
-
+```
 // $this->toFirstOnes :
-
+```
 private function toFirstOnes(array $eid_data): array
     {
         foreach ($eid_data as $key => $value) {
@@ -226,7 +226,7 @@ private function toFirstOnes(array $eid_data): array
         }
         return $eid_data;
     }
-
+```
 
 Security Guidelines
 -------------------
